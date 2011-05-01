@@ -1,0 +1,10 @@
+name: DatabaseSample
+main: us.axefan.demo.DatabaseSample
+version: 0.1
+author: axefan
+database: true
+description: Tracks player info.
+commands:
+    track:
+        description: Enables or disables player info tracking.
+        usage: /track
