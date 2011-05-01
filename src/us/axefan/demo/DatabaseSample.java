@@ -43,6 +43,7 @@ public class DatabaseSample extends JavaPlugin{
      */
     private void setupDatabase(){
 		try {
+			// Verify or create ebean.properties file.
 			File ebeans = new File("ebean.properties");
 			if (!ebeans.exists()) {
 				try {
@@ -51,15 +52,19 @@ public class DatabaseSample extends JavaPlugin{
 					e.printStackTrace();
 				}
 			}
+			// Check for existing database.
 			this.getDatabase().find(DatabaseSamplePlayerRecord.class).findRowCount();
 		} catch (PersistenceException ex) {
-			System.out.println("Installing database for "
-					+ getDescription().getName() + " due to first time usage");
-			installDDL();
+			// Create new database.
+			System.out.println(this.getDescription().getName() + " installing database");
+			this.installDDL();
 		}
 		m_db = this.getDatabase();
 	}
 	
+    /*
+     * List the classes to store in the database.
+     */
 	public List<Class<?>> getDatabaseClasses() {
 		List<Class<?>> list = new ArrayList<Class<?>>();
 		list.add(DatabaseSamplePlayerRecord.class);
@@ -67,6 +72,9 @@ public class DatabaseSample extends JavaPlugin{
 		return list;
 	}
     
+	/*
+	 * Get or create a player record in the "players" table.
+	 */
 	public DatabaseSamplePlayerRecord getPlayerRecord(Player player){
 		DatabaseSamplePlayerRecord record = m_db.find(DatabaseSamplePlayerRecord.class).where().ieq("playerName", player.getName()).findUnique();
 		if (record == null){
@@ -78,16 +86,10 @@ public class DatabaseSample extends JavaPlugin{
 		return record;
     }
     
-	/* Workaround for 700 update bug - yuck!
-    BedRespawnLocation bedRespawn = plugin.getDatabase().find(BedRespawnLocation.class).where().ieq("playerName", player.getName()).findUnique();
-    if (bedRespawn != null) {
-         plugin.getDatabase().delete(bedRespawn);
-    }
-    bedRespawn = new BedRespawnLocation();
-    bedRespawn.setPlayer(player);
-    bedRespawn.setLocation(block.getLocation());
-    plugin.getDatabase().save(bedRespawn);
-  	*/
+	/*
+	 * Saves a player record to the "players" table.
+	 * @param record - The record to save.
+	 */
     public void savePlayerRecord(DatabaseSamplePlayerRecord record){
     	if (record.getId() == 0){
     		System.out.print("Creating player record " + record.getPlayerName() + "...");
@@ -99,6 +101,11 @@ public class DatabaseSample extends JavaPlugin{
 		System.out.print("Saved");
     }
     
+    /*
+     * Adds a block record to the player's "blocks" table.
+     * @param player - The player.
+     * @param block - The block to add.
+     */
     public void addBlock(Player player, Block block){
     	System.out.print("Creating block record " + block.getTypeId() + "...");
     	DatabaseSampleBlockRecord record = new DatabaseSampleBlockRecord();
@@ -108,6 +115,11 @@ public class DatabaseSample extends JavaPlugin{
 		System.out.print("Saved");
     }
     
+    /*
+     * Notifies player of current tracking status.
+     * @param player - The player.
+     * @param record - The player's record.
+     */
 	public void printPlayerStatus(Player player, DatabaseSamplePlayerRecord record){
 		if (record.getEnabled()){
 			player.sendMessage("Tracking is enabled");
@@ -116,6 +128,10 @@ public class DatabaseSample extends JavaPlugin{
 		}
 	}
 	
+	/*
+	 * Notifies player when a block has been destroyed.
+     * @param player - The player.
+	 */
 	public void printBlocksDestroyed(Player player) {
 		ExpressionList<DatabaseSampleBlockRecord> blocks = m_db.find(DatabaseSampleBlockRecord.class).where().ieq("playerName", player.getName());
 		player.sendMessage(Integer.toString(blocks.findRowCount()) + " blocks destroyed!");
