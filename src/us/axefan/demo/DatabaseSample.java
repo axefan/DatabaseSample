@@ -38,6 +38,9 @@ public class DatabaseSample extends JavaPlugin{
     public void onDisable(){
 	}
     
+    /*
+     * Ensures that the database for this plugin is installed and available.
+     */
     private void setupDatabase(){
 		try {
 			File ebeans = new File("ebean.properties");
